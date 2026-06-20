@@ -2,7 +2,7 @@ setuptools==81.0.0
 pandas==1.5.3
 tiktoken==0.4.0
 openai==1.6.1
-aiohttp==3.10.5
+aiohttp==3.14.1
 git+https://github.com/Pathos14489/faster-whisper.git
 fastapi==0.112.4
 torchcodec==0.9.1
