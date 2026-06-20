@@ -8,7 +8,7 @@ import uuid
 import src.characters_manager as characters_manager # Character Manager class
 logging.info("Imported required libraries in conversation_managers/creation_engine_file_buffers.py")
 
-valid_games = ["fallout4","skyrim","fallout4vr","skyrimvr"]
+valid_games = ["fallout4","skyrim","fallout4vr","skyrimvr", "wow"]
 manager_slug = "gradio"
 
 class ConversationManager(BaseConversationManager):

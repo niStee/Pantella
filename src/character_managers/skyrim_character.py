@@ -4,7 +4,7 @@ from src.character_managers.base_character import Character as base_Character
 logging.info("Imported required libraries in skyrim_character.py")
 
 manager_slug = "skyrim"
-valid_games = ["skyrim","skyrimvr"]
+valid_games = ["skyrim","skyrimvr","wow"]
 
 class Character(base_Character):
     def __init__(self, characters_manager, info):
