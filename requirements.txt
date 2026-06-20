@@ -142,3 +142,5 @@ accelerate==1.13.0
 torch==2.8.0
 torchvision==0.23.0
 torchaudio==2.8.0
+pywin32>=306
+watchdog>=3.0.0

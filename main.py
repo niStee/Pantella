@@ -215,15 +215,29 @@ async def conversation_loop():
         else:
             random_voice = random.choice(voices)
             conversation_manager.synthesizer._say("Pantella is ready to go.", random_voice)
-    while True: # Main Conversation Loop - restarts when conversation ends
-        await conversation_manager.await_and_setup_conversation() # wait for player to select an NPC and setup the conversation when outside of conversation
-        while conversation_manager.in_conversation and not conversation_manager.conversation_ended:
-            await conversation_manager.step() # step through conversation until conversation ends
+    try:
+        while True: # Main Conversation Loop - restarts when conversation ends
+            await conversation_manager.await_and_setup_conversation() # wait for player to select an NPC and setup the conversation when outside of conversation
+            while conversation_manager.in_conversation and not conversation_manager.conversation_ended:
+                # 1. Check for urgent radiant triggers (combat, low HP, boss timers)
+                if hasattr(conversation_manager.game_interface, 'radiant_queue') and conversation_manager.game_interface.radiant_queue:
+                    urgent_text = conversation_manager.game_interface.radiant_queue.pop(0)
+                    voices = conversation_manager.synthesizer.voices()
+                    if voices:
+                        conversation_manager.synthesizer._say(urgent_text, random.choice(voices))
+                    if hasattr(conversation_manager.game_interface, '_update_overlay'):
+                        conversation_manager.game_interface._update_overlay(urgent_text, 'red')
+                    continue  # Skip this loop iteration, don't wait for LLM
+                
+                await conversation_manager.step() # step through conversation until conversation ends
+                if conversation_manager.restart:
+                    conversation_manager = restart_manager(config, conversation_manager)
+                    break
             if conversation_manager.restart:
                 conversation_manager = restart_manager(config, conversation_manager)
-                break
-        if conversation_manager.restart:
-            conversation_manager = restart_manager(config, conversation_manager)
+    finally:
+        if hasattr(conversation_manager, 'game_interface') and hasattr(conversation_manager.game_interface, 'shutdown'):
+            conversation_manager.game_interface.shutdown()
             
 if __name__ == "__main__":
     # Start config FastAPI server and conversation loop in parallel
