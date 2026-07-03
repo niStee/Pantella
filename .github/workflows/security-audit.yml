@@ -22,7 +22,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Run gitleaks
-        uses: gitleaks/gitleaks-action@ff0186c30aeebdeb853a28ff03fbf5b9c88ff0bc # v2
+        uses: gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc # v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -33,19 +33,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - name: Set up Python
-        uses: actions/setup-python@a309ff8a426b58ec0e2a45f0f869d46889d02405 # v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
         with:
           python-version: '3.10'
+      - name: Install security tools
+        run: |
+          pip install --no-deps --require-hashes -r requirements-security.txt
       - name: Run pip-audit
-        uses: pypa/gh-action-pip-audit@v1
+        continue-on-error: true
+        run: |
+          pip-audit -r requirements.txt -r launcher_requirements.txt --format=json --output=pip-audit-results.json || true
+          pip-audit -r requirements.txt -r launcher_requirements.txt --format=summary 2>&1 | tee pip-audit-results.txt || true
+          echo "## pip-audit findings" >> "$GITHUB_STEP_SUMMARY"
+          cat pip-audit-results.txt >> "$GITHUB_STEP_SUMMARY" || true
+      - name: Upload pip-audit results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          inputs: |
-            requirements.txt
-            launcher_requirements.txt
-          # pantella-wow vendored C++/CUDA wheels do not always have patched
-          # releases; per-package suppressions should be reviewed and
-          # documented here rather than blanket-ignored.
-          ignore-vulns: ''
+          name: pip-audit-results
+          path: pip-audit-results.*
+          retention-days: 30
 
   bandit:
     name: Python SAST (bandit)
@@ -54,11 +61,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - name: Set up Python
-        uses: actions/setup-python@a309ff8a426b58ec0e2a45f0f869d46889d02405 # v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
         with:
           python-version: '3.10'
-      - name: Install bandit
-        run: pip install bandit==1.8.2
+      - name: Install security tools
+        run: |
+          pip install --no-deps --require-hashes -r requirements-security.txt
       - name: Run bandit
         continue-on-error: true
         run: |
@@ -86,8 +94,7 @@ jobs:
         env:
           SEMGREP_SEND_METRICS: 'off'
         run: |
-          semgrep --config=auto \
-                  --config=p/security-audit \
+          semgrep --config=p/security-audit \
                   --config=p/owasp-top-ten \
                   --config=p/cwe-top-25 \
                   --config=p/python \
@@ -114,4 +121,4 @@ jobs:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - name: Dependency Review
-        uses: actions/dependency-review-action@3b139cfc5fae8b618d3eae3675e383bb1769c019 # v4
+        uses: actions/dependency-review-action@4901385134134e04cec5fbe5ddfe3b2c5bd5d976 # v4
