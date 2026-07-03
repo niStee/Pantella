@@ -21,5 +21,7 @@ jobs:
         run: |
           git remote add upstream https://github.com/Pathos14489/Pantella.git
           git fetch upstream
-          git reset --hard upstream/main
-          git push --force origin main
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git merge --no-edit upstream/main
+          git push origin main
