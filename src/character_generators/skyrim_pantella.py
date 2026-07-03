@@ -1,8 +1,7 @@
-print("Importing simple_generator.py")
+print("Importing skyrim_pantella.py")
 from src.logging import logging
 from pydantic import BaseModel, Field
-from typing import List, Literal, Optional
-logging.info("Imported required libraries in simple_generator.py")
+logging.info("Imported required libraries in skyrim_pantella.py")
 
 generator_name = "skyrim_pantella"
 valid_games = ["skyrim","skyrimvr"]
