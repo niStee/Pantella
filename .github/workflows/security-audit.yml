@@ -1,0 +1,117 @@
+name: Security Audit
+
+on:
+  push:
+    branches: [main, master, dev/pantella-wow]
+  pull_request:
+    branches: [main, master, dev/pantella-wow]
+  schedule:
+    - cron: '0 6 * * 1'  # Weekly Monday 6am UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    name: Secret scanning
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          fetch-depth: 0
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@ff0186c30aeebdeb853a28ff03fbf5b9c88ff0bc # v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  pip-audit:
+    name: Dependency vulnerability scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8a426b58ec0e2a45f0f869d46889d02405 # v6
+        with:
+          python-version: '3.10'
+      - name: Run pip-audit
+        uses: pypa/gh-action-pip-audit@v1
+        with:
+          inputs: |
+            requirements.txt
+            launcher_requirements.txt
+          # pantella-wow vendored C++/CUDA wheels do not always have patched
+          # releases; per-package suppressions should be reviewed and
+          # documented here rather than blanket-ignored.
+          ignore-vulns: ''
+
+  bandit:
+    name: Python SAST (bandit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8a426b58ec0e2a45f0f869d46889d02405 # v6
+        with:
+          python-version: '3.10'
+      - name: Install bandit
+        run: pip install bandit==1.8.2
+      - name: Run bandit
+        continue-on-error: true
+        run: |
+          bandit -r src/ -f txt -o bandit-results.txt || true
+          echo "## Bandit findings" >> "$GITHUB_STEP_SUMMARY"
+          cat bandit-results.txt >> "$GITHUB_STEP_SUMMARY" || true
+      - name: Upload bandit results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: bandit-results
+          path: bandit-results.txt
+          retention-days: 30
+
+  semgrep:
+    name: Semgrep SAST
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - name: Run Semgrep
+        continue-on-error: true
+        env:
+          SEMGREP_SEND_METRICS: 'off'
+        run: |
+          semgrep --config=auto \
+                  --config=p/security-audit \
+                  --config=p/owasp-top-ten \
+                  --config=p/cwe-top-25 \
+                  --config=p/python \
+                  --error \
+                  src/ \
+                  2>&1 | tee semgrep-results.txt || true
+          echo "## Semgrep findings" >> "$GITHUB_STEP_SUMMARY"
+          cat semgrep-results.txt >> "$GITHUB_STEP_SUMMARY" || true
+      - name: Upload semgrep results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: semgrep-results
+          path: semgrep-results.txt
+          retention-days: 30
+
+  dependency-review:
+    name: Dependency change review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - name: Dependency Review
+        uses: actions/dependency-review-action@3b139cfc5fae8b618d3eae3675e383bb1769c019 # v4
