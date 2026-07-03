@@ -1,9 +1,9 @@
 # Pantella
 
 > Parent: [~/AGENTS.md](../../AGENTS.md) — environment-wide · [~/Projects/AGENTS.md](../AGENTS.md) — project index
-> Generated: 2026-06-30 · Commit: `6e872100` · Branch: `feat/pantella-wow-submodule`
+> Generated: 2026-07-03 · Commit: `02e60bfc` · Branch: `dev/pantella-wow`
 
-Public GitHub fork of [Mantella](https://github.com/Pathos14489/Pantella) — Skyrim/FO4/FNV mod for natural speech interaction with NPCs via LLM inference.
+Public GitHub fork of [Pantella](https://github.com/Pathos14489/Pantella) — Skyrim/FO4/FNV/Oblivion mod for natural speech interaction with NPCs via LLM inference. This fork is maintained as an upstream-compatible mirror; World of Warcraft integration lives in the separate [pantella-wow](https://github.com/niStee/pantella-wow) repo.
 
 ## Stack
 
@@ -96,3 +96,43 @@ python main.py
 - The Launcher (Windows-only) manages the Python environment, repo updates, and plugin deployment. Linux users run `main.py` directly.
 - The ChromaDB memory editor and debug UI require `gradio`; startup continues if gradio is missing but those UIs are unavailable.
 - CI/CD is minimal: GitHub Actions CodeQL only (public fork).
+
+## Fork-Specific Notes
+
+This section applies to the `niStee/Pantella` fork only.
+
+### Branch Strategy
+
+| Branch | Purpose | Default? |
+|--------|---------|----------|
+| `main` | Upstream-compatible mirror, synced from `Pathos14489/Pantella:main` | Yes |
+| `dev/pantella-wow` | Integration branch for fork-specific WoW work (if any) | No |
+
+Keep `main` as close to upstream as possible. All fork-specific work (WoW integration, docs, tooling changes not suitable for upstream) goes on `dev/pantella-wow`.
+
+### Upstream Sync
+
+- `.github/workflows/sync-upstream.yml` runs daily and on demand.
+- It fetches `Pathos14489/Pantella:main` and **merges** it into `niStee/Pantella:main`.
+- The merge-based approach preserves fork-specific commits (the workflow file and `.gitignore` entries) instead of force-resetting the branch.
+- Trigger manually from the repo’s Actions tab if you need an immediate sync.
+
+### `pantella-wow` Addon Layout
+
+The WoW addon has its own repository (`niStee/pantella-wow`) and is **not** a submodule of this fork. To work locally:
+
+- Linux/macOS: clone `pantella-wow` anywhere (e.g. `~/Projects/pantella-wow`). You may also keep a checkout at `Pantella/addons/pantella-wow/` for convenience.
+- Windows: clone to `D:\repos\pantella-wow` (or another path outside `Program Files`) and junction it into WoW’s AddOns folder.
+
+`Pantella/addons/pantella-wow/` and `.omo/` are gitignored so the standalone clone does not show up as untracked when working on this repo.
+
+### Dependency Updates
+
+This fork tracks upstream for dependency updates. Dependabot version-update pull requests on `niStee/Pantella` are closed intentionally; security alerts remain enabled. If a dependency change is needed specifically for WoW work, apply it on `dev/pantella-wow`.
+
+### Branch Hygiene
+
+Stale branches for merged or superseded work should be deleted after the corresponding PR is closed/merged. Retained long-lived branches:
+
+- `main`
+- `dev/pantella-wow`
