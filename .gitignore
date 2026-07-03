@@ -37,3 +37,4 @@ data/models/gpt_sovits/chinese-roberta-wwm-ext-large/pytorch_model.bin
 data/models/gpt_sovitschinese-hubert-base/chinese-hubert-base/pytorch_model.bin
 /addons/pantella-wow/
 /.omo/
+/scripts/
