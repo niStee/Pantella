@@ -253,6 +253,8 @@ Addon writes state to SavedVariables, Python polls file mtime. **Only written on
 
 #### Recommended architecture:
 
+The formal Architecture Decision Record for IPC transport is at `docs/ADR-001-ipc-transport.md` in the [`niStee/pantella-wow`](https://github.com/niStee/pantella-wow) addon repo (merged on `main`). It documents the channel-neutral message envelope, anti-goals, and implementation milestones.
+
 ```
 Addon (Lua)                    Python Backend
 ─────────────                  ───────────────
