@@ -128,16 +128,17 @@ The WoW addon has its own repository (`niStee/pantella-wow`) and is **not** a su
 
 ### Windows Embedded-Python WoW Runtime
 
-The Windows machine (`192.168.178.115`, user `2glea`) runs Pantella via the Launcher's embedded Python, not conda/venv. The active checkout is at `D:\repos\Pantella-work`. The separate pantella-wow addon repo is at `D:\repos\pantella-wow` (standalone, not a submodule). A second copy exists inside the checkout at `D:\repos\Pantella-work\addons\pantella-wow\` — **all addon fixes must target this copy**, not the standalone repo.
+The Windows machine (`192.168.178.115`, user `2glea`) runs Pantella via the Launcher's embedded Python, not conda/venv. The layout uses a **standalone addon + dual junction** architecture: the canonical addon repo at `D:\repos\pantella-wow` is linked into both the Pantella core checkout and the WoW AddOns folder via NTFS junctions. This matches the `ai-infra/scripts/bootstrap-windows.ps1.tmpl` template.
 
 **Layout:**
 
 | Path | Purpose |
 |------|---------|
-| `D:\repos\Pantella-Launcher\` | Launcher root with `python-3.10.11-embed\python.exe` |
-| `D:\repos\Pantella-work\` | Active Pantella checkout (this fork) |
-| `D:\repos\pantella-wow\` | Standalone WoW addon repo (separate clone, not a submodule) |
-| `D:\repos\Pantella-work\addons\pantella-wow\` | **Active addon copy loaded by Pantella** — fix files here, not in the standalone repo |
+| `D:\repos\Pantella-Launcher\Pantella_Launcher\` | Launcher root with `python-3.10.11-embed\python.exe` |
+| `D:\repos\Pantella\` | Active Pantella core checkout (this fork, `dev/pantella-wow` branch) |
+| `D:\repos\pantella-wow\` | Canonical WoW addon repo (`windows-runtime-fixes` local branch, not pushed) |
+| `D:\repos\Pantella\addons\pantella-wow\` | **Junction** → `D:\repos\pantella-wow` (backend loads addon from here) |
+| `C:\games\World of Warcraft\_retail_\Interface\AddOns\MantellaWoW\` | **Junction** → `D:\repos\pantella-wow\MantellaWoW` (game loads addon from here) |
 | `C:\games\World of Warcraft\_retail_\` | WoW Midnight (12.0.7.68275) installation |
 
 **WoW version details (Midnight expansion):**
@@ -163,9 +164,9 @@ The embedded Python's `python310._pth` only puts the embed directory on `sys.pat
 ```python
 # pantella_wow_bootstrap.py — placed in the repo root
 import os, runpy, sys
-os.chdir(r'D:\repos\Pantella-work')
-sys.path.insert(0, r'D:\repos\Pantella-work')
-runpy.run_path(r'D:\repos\Pantella-work\main.py', run_name='__main__')
+os.chdir(r'D:\repos\Pantella')
+sys.path.insert(0, r'D:\repos\Pantella')
+runpy.run_path(r'D:\repos\Pantella\main.py', run_name='__main__')
 ```
 
 **Launch methods (ordered by reliability):**
@@ -181,7 +182,7 @@ Startup takes ~4-5 minutes (chromadb, pyannote, speechbrain, all TTS engines imp
 
 ### Backend Fixes Applied for WoW (on Windows checkout)
 
-These are changes applied to `D:\repos\Pantella-work\` to make the WoW backend start. They are **not** committed to the git repo — they're runtime workarounds.
+These are changes applied to `D:\repos\Pantella` to make the WoW backend start. They are **not** committed to the git repo — they're runtime workarounds applied as intentional local modifications (documented and verified by the Pester TDI test in `ai-infra/tests/pester/streamline-windows-pantella-layout.tests.ps1`).
 
 | Fix | File | Problem | Solution |
 |-----|------|---------|----------|
@@ -194,9 +195,9 @@ These are changes applied to `D:\repos\Pantella-work\` to make the WoW backend s
 | `data/conversations/` | `data/conversations/` | MemoryEditor tries to `os.listdir()` non-existent directory | Created empty directory |
 | API key | `GPT_SECRET_KEY.txt` | OpenRouter API key missing | Retrieved from KWallet, written to file |
 
-### Pantella-WoW Addon Fixes Applied (on `addons/pantella-wow/`)
+### Pantella-WoW Addon Fixes Applied (on `D:\repos\pantella-wow`)
 
-These fixes address compatibility issues between the pantella-wow addon and the current Pantella core. All changes are at `D:\repos\Pantella-work\addons\pantella-wow\` — the **active addon copy**, not the standalone repo at `D:\repos\pantella-wow\`.
+These fixes address compatibility issues between the pantella-wow addon and the current Pantella core. All changes are in the **canonical standalone addon repo** at `D:\repos\pantella-wow` on local branch `windows-runtime-fixes` (not pushed). The dual junctions ensure both the Pantella backend and the WoW game client read from this single source of truth.
 
 | Fix | File | Problem | Solution |
 |-----|------|---------|----------|
@@ -211,7 +212,7 @@ These fixes address compatibility issues between the pantella-wow addon and the 
 | Stub character generator | `character_generators/wow_character_generator.py` | Imports non-existent `skyrim_character_generator` | Replaced with minimal stub: `generator_name`, `Character` class |
 | Stub character DB | `character_db/wow_character_db.py` | Imports non-existent `skyrim_character_db` | Replaced with minimal stub: `db_slug`, `valid_games`, `CharacterDB` class |
 | Interface config | `interface_configs/wow.json` | `character_db: "wow_character_db"` not in DB_Types (dir is `character_db/` singular, code expects `character_dbs/` plural) | Changed to `base_db` |
-| Overlay copy | `overlay.py` | Present in standalone repo but missing from active addon copy | Copied from `D:\repos\pantella-wow\overlay.py` |
+| Overlay copy | `overlay.py` | Present in standalone repo but missing from active checkout | Copied from `D:\repos\pantella-wow\overlay.py` |
 
 ### WoW Addon IPC Architecture (Research Findings, July 2026)
 
