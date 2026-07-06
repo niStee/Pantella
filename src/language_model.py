@@ -56,7 +56,16 @@ for addon_dir in os.listdir(addons_path):
                     logging.error(f"Failed to import {module_name} from addons.{addon_dir}.inference_engines: {e}")
                     logging.error(traceback.format_exc())
 
-LLM_Types["default"] = LLM_Types[default]
+try:
+    LLM_Types["default"] = LLM_Types[default]
+except KeyError:
+    logging.warning(f"Default LLM '{default}' not available, falling back to first available engine")
+    if LLM_Types:
+        LLM_Types["default"] = LLM_Types[list(LLM_Types.keys())[0]]
+        logging.info(f"Fell back to: {LLM_Types[list(LLM_Types.keys())[0]]}")
+    else:
+        LLM_Types["default"] = None
+        logging.error("No LLM engines available!")
 logging.info("Imported all LLMs to LLM_Types, ready to create a LLM object!")
 # print available LLMs
 logging.config(f"Available LLMs: {LLM_Types.keys()}")

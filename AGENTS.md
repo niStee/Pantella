@@ -3,7 +3,7 @@
 > Parent: [~/AGENTS.md](../../AGENTS.md) — environment-wide · [~/Projects/AGENTS.md](../AGENTS.md) — project index
 > Generated: 2026-07-04 · Commit: `d4773e4a` · Branch: `dev/pantella-wow`
 
-Public GitHub fork of [Pantella](https://github.com/Pathos14489/Pantella) — Skyrim/FO4/FNV/Oblivion mod for natural speech interaction with NPCs via LLM inference. This fork is maintained as an upstream-compatible mirror; World of Warcraft integration lives in the separate [pantella-wow](https://github.com/niStee/pantella-wow) repo.
+Public GitHub fork of [Pantella](https://github.com/Pathos14489/Pantella) — Skyrim/FO4/FNV/Oblivion mod for natural speech interaction with NPCs via LLM inference. This fork is maintained as an upstream-compatible mirror; World of Warcraft integration lives in the separate [pantella-wow](https://github.com/niStee/pantella-wow) repo, which is included here as a Git submodule at `addons/pantella-wow`. Run `git submodule update --init --recursive` after cloning to populate it.
 
 ## Stack
 
@@ -128,16 +128,17 @@ The WoW addon has its own repository (`niStee/pantella-wow`) and is **not** a su
 
 ### Windows Embedded-Python WoW Runtime
 
-The Windows machine (`192.168.178.115`, user `2glea`) runs Pantella via the Launcher's embedded Python, not conda/venv. The active checkout is at `D:\repos\Pantella-work`. The separate pantella-wow addon repo is at `D:\repos\pantella-wow` (standalone, not a submodule). A second copy exists inside the checkout at `D:\repos\Pantella-work\addons\pantella-wow\` — **all addon fixes must target this copy**, not the standalone repo.
+The Windows machine (`192.168.178.115`, user `2glea`) runs Pantella via the Launcher's embedded Python, not conda/venv. The layout uses a **standalone addon + dual junction** architecture: the canonical addon repo at `D:\repos\pantella-wow` is linked into both the Pantella core checkout and the WoW AddOns folder via NTFS junctions. This matches the `ai-infra/scripts/bootstrap-windows.ps1.tmpl` template.
 
 **Layout:**
 
 | Path | Purpose |
 |------|---------|
-| `D:\repos\Pantella-Launcher\` | Launcher root with `python-3.10.11-embed\python.exe` |
-| `D:\repos\Pantella-work\` | Active Pantella checkout (this fork) |
-| `D:\repos\pantella-wow\` | Standalone WoW addon repo (separate clone, not a submodule) |
-| `D:\repos\Pantella-work\addons\pantella-wow\` | **Active addon copy loaded by Pantella** — fix files here, not in the standalone repo |
+| `D:\repos\Pantella-Launcher\Pantella_Launcher\` | Launcher root with `python-3.10.11-embed\python.exe` |
+| `D:\repos\Pantella\` | Active Pantella core checkout (this fork, `dev/pantella-wow` branch) |
+| `D:\repos\pantella-wow\` | Canonical WoW addon repo (`windows-runtime-fixes` local branch, not pushed) |
+| `D:\repos\Pantella\addons\pantella-wow\` | **Junction** → `D:\repos\pantella-wow` (backend loads addon from here) |
+| `C:\games\World of Warcraft\_retail_\Interface\AddOns\MantellaWoW\` | **Junction** → `D:\repos\pantella-wow\MantellaWoW` (game loads addon from here) |
 | `C:\games\World of Warcraft\_retail_\` | WoW Midnight (12.0.7.68275) installation |
 
 **WoW version details (Midnight expansion):**
@@ -163,9 +164,9 @@ The embedded Python's `python310._pth` only puts the embed directory on `sys.pat
 ```python
 # pantella_wow_bootstrap.py — placed in the repo root
 import os, runpy, sys
-os.chdir(r'D:\repos\Pantella-work')
-sys.path.insert(0, r'D:\repos\Pantella-work')
-runpy.run_path(r'D:\repos\Pantella-work\main.py', run_name='__main__')
+os.chdir(r'D:\repos\Pantella')
+sys.path.insert(0, r'D:\repos\Pantella')
+runpy.run_path(r'D:\repos\Pantella\main.py', run_name='__main__')
 ```
 
 **Launch methods (ordered by reliability):**
@@ -179,24 +180,32 @@ runpy.run_path(r'D:\repos\Pantella-work\main.py', run_name='__main__')
 
 Startup takes ~4-5 minutes (chromadb, pyannote, speechbrain, all TTS engines import eagerly). The `faster_whisper` module must be banlisted in `src/module_banlist` (causes silent crash during import in detached sessions).
 
-### Backend Fixes Applied for WoW (on Windows checkout)
+### Backend Fixes Applied for WoW
 
-These are changes applied to `D:\repos\Pantella-work\` to make the WoW backend start. They are **not** committed to the git repo — they're runtime workarounds.
+These fixes are committed to the `dev/pantella-wow` branch of this fork. They were originally developed on the Windows checkout and then synced back to `niStee/Pantella`.
 
 | Fix | File | Problem | Solution |
 |-----|------|---------|----------|
 | Banlist `llama_cpp_python` | `src/module_banlist` | Broken `llama.dll` causes `KeyError: 'llama_cpp_python'` crash | Added `llama_cpp_python` to banlist |
 | Banlist `faster_whisper` | `src/module_banlist` | Silent crash during import in detached sessions | Added `faster_whisper` to banlist |
 | Default LLM fallback | `src/language_model.py` line 59 | `LLM_Types["default"] = LLM_Types[default]` crashes when default unavailable | Wrapped in try/except, falls back to first available engine |
-| Restore clean logging | `src/logging.py` | Corrupted by bad try/except edits | scp'd clean copy from Linux repo |
-| `libraries/` directory | `libraries/` | Missing from Windows checkout (chatterbox, GPT-SoVITS fail) | scp'd from Linux repo |
-| `prompt_styles/wow_prompt_style.json` | `prompt_styles/` | `wow_prompt_style` referenced by interface config but didn't exist | Created minimal WoW prompt style |
-| `data/conversations/` | `data/conversations/` | MemoryEditor tries to `os.listdir()` non-existent directory | Created empty directory |
-| API key | `GPT_SECRET_KEY.txt` | OpenRouter API key missing | Retrieved from KWallet, written to file |
 
-### Pantella-WoW Addon Fixes Applied (on `addons/pantella-wow/`)
+> WoW-specific prompt styles and runtime helpers have been moved to the `pantella-wow` addon submodule; they are no longer tracked in the core fork.
 
-These fixes address compatibility issues between the pantella-wow addon and the current Pantella core. All changes are at `D:\repos\Pantella-work\addons\pantella-wow\` — the **active addon copy**, not the standalone repo at `D:\repos\pantella-wow\`.
+### Player Input Channel
+
+The WoW conversation manager now reads player input via the addon slash command `/cm` (Companion Message). This avoids collisions with built-in WoW slash commands (`/mt` is a party command, `/pantella` is also built-in).
+
+In-game usage:
+```
+/cm Hello, companion.
+```
+
+The Lua addon stores the message in `MantellaWoWDB.player_input` and increments `player_input_id`. The Python `WoWGameInterface.get_text_input()` polls the hidden `MantellaWoW_State` EditBox for new `player_input_id` values, consumes the message, and returns it to the conversation loop. This is a temporary channel until the pixel-encoding IPC is implemented.
+
+### Pantella-WoW Addon Fixes Applied
+
+These fixes address compatibility issues between the pantella-wow addon and the current Pantella core. They are committed to the `niStee/pantella-wow` repo.
 
 | Fix | File | Problem | Solution |
 |-----|------|---------|----------|
@@ -206,12 +215,13 @@ These fixes address compatibility issues between the pantella-wow addon and the 
 | Window class | `game_interfaces/wow.py` line 176 | `FindWindow("GxWindowClass", ...)` finds nothing in Midnight | Changed to `"waApplication Window"` |
 | `__init__` signature | `game_interfaces/wow.py` line 82 | `WoWGameInterface.__init__` took 2 args, factory passes 3 | Updated to `(self, conversation_manager, valid_games, interface_slug)`, pass all to `super().__init__()` |
 | Class alias | `game_interfaces/wow.py` (end) | Factory expects `module.GameInterface`, class is `WoWGameInterface` | Added `GameInterface = WoWGameInterface` |
-| `manager_slug` | `conversation_managers/wow_conversation_manager.py` | Missing `manager_slug` attribute → addon doesn't register | Rewrote with `manager_slug`, `valid_games`, `ConversationManager` class, `await_and_setup_conversation()` implementation |
+| `/cm` player input | `MantellaWoW/MantellaWoW.lua` + `game_interfaces/wow.py` | No way to send player text to the backend from WoW | Added `/cm` slash command and EditBox polling reader |
+| `manager_slug` | `conversation_managers/wow_conversation_manager.py` | Missing `manager_slug` attribute → addon doesn't register | Rewrote with `manager_slug`, `valid_games`, `ConversationManager` class, `await_and_setup_conversation()` and `step()` implementation |
 | Stub character manager | `character_managers/wow_character_manager.py` | Imports non-existent `skyrim_character_manager` | Replaced with minimal stub: `manager_slug`, `valid_games`, `Character` class |
 | Stub character generator | `character_generators/wow_character_generator.py` | Imports non-existent `skyrim_character_generator` | Replaced with minimal stub: `generator_name`, `Character` class |
 | Stub character DB | `character_db/wow_character_db.py` | Imports non-existent `skyrim_character_db` | Replaced with minimal stub: `db_slug`, `valid_games`, `CharacterDB` class |
 | Interface config | `interface_configs/wow.json` | `character_db: "wow_character_db"` not in DB_Types (dir is `character_db/` singular, code expects `character_dbs/` plural) | Changed to `base_db` |
-| Overlay copy | `overlay.py` | Present in standalone repo but missing from active addon copy | Copied from `D:\repos\pantella-wow\overlay.py` |
+| Overlay copy | `overlay.py` | Present in standalone repo but missing from active checkout | Copied from `D:\repos\pantella-wow\overlay.py` |
 
 ### WoW Addon IPC Architecture (Research Findings, July 2026)
 
