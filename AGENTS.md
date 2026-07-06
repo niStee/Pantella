@@ -180,24 +180,31 @@ runpy.run_path(r'D:\repos\Pantella\main.py', run_name='__main__')
 
 Startup takes ~4-5 minutes (chromadb, pyannote, speechbrain, all TTS engines import eagerly). The `faster_whisper` module must be banlisted in `src/module_banlist` (causes silent crash during import in detached sessions).
 
-### Backend Fixes Applied for WoW (on Windows checkout)
+### Backend Fixes Applied for WoW
 
-These are changes applied to `D:\repos\Pantella` to make the WoW backend start. They are **not** committed to the git repo — they're runtime workarounds applied as intentional local modifications (documented and verified by the Pester TDI test in `ai-infra/tests/pester/streamline-windows-pantella-layout.tests.ps1`).
+These fixes are committed to the `dev/pantella-wow` branch of this fork. They were originally developed on the Windows checkout and then synced back to `niStee/Pantella`.
 
 | Fix | File | Problem | Solution |
 |-----|------|---------|----------|
 | Banlist `llama_cpp_python` | `src/module_banlist` | Broken `llama.dll` causes `KeyError: 'llama_cpp_python'` crash | Added `llama_cpp_python` to banlist |
 | Banlist `faster_whisper` | `src/module_banlist` | Silent crash during import in detached sessions | Added `faster_whisper` to banlist |
 | Default LLM fallback | `src/language_model.py` line 59 | `LLM_Types["default"] = LLM_Types[default]` crashes when default unavailable | Wrapped in try/except, falls back to first available engine |
-| Restore clean logging | `src/logging.py` | Corrupted by bad try/except edits | scp'd clean copy from Linux repo |
-| `libraries/` directory | `libraries/` | Missing from Windows checkout (chatterbox, GPT-SoVITS fail) | scp'd from Linux repo |
-| `prompt_styles/wow_prompt_style.json` | `prompt_styles/` | `wow_prompt_style` referenced by interface config but didn't exist | Created minimal WoW prompt style |
-| `data/conversations/` | `data/conversations/` | MemoryEditor tries to `os.listdir()` non-existent directory | Created empty directory |
-| API key | `GPT_SECRET_KEY.txt` | OpenRouter API key missing | Retrieved from KWallet, written to file |
+| `prompt_styles/wow_prompt_style.json` | `prompt_styles/` | `wow_prompt_style` referenced by interface config but didn't exist | Created minimal WoW prompt style with both `message_seperator` and `message_separator` keys |
 
-### Pantella-WoW Addon Fixes Applied (on `D:\repos\pantella-wow`)
+### Player Input Channel
 
-These fixes address compatibility issues between the pantella-wow addon and the current Pantella core. All changes are in the **canonical standalone addon repo** at `D:\repos\pantella-wow` on local branch `windows-runtime-fixes` (not pushed). The dual junctions ensure both the Pantella backend and the WoW game client read from this single source of truth.
+The WoW conversation manager now reads player input via the addon slash command `/cm` (Companion Message). This avoids collisions with built-in WoW slash commands (`/mt` is a party command, `/pantella` is also built-in).
+
+In-game usage:
+```
+/cm Hello, companion.
+```
+
+The Lua addon stores the message in `MantellaWoWDB.player_input` and increments `player_input_id`. The Python `WoWGameInterface.get_text_input()` polls the hidden `MantellaWoW_State` EditBox for new `player_input_id` values, consumes the message, and returns it to the conversation loop. This is a temporary channel until the pixel-encoding IPC is implemented.
+
+### Pantella-WoW Addon Fixes Applied
+
+These fixes address compatibility issues between the pantella-wow addon and the current Pantella core. They are committed to the `niStee/pantella-wow` repo.
 
 | Fix | File | Problem | Solution |
 |-----|------|---------|----------|
@@ -207,7 +214,8 @@ These fixes address compatibility issues between the pantella-wow addon and the 
 | Window class | `game_interfaces/wow.py` line 176 | `FindWindow("GxWindowClass", ...)` finds nothing in Midnight | Changed to `"waApplication Window"` |
 | `__init__` signature | `game_interfaces/wow.py` line 82 | `WoWGameInterface.__init__` took 2 args, factory passes 3 | Updated to `(self, conversation_manager, valid_games, interface_slug)`, pass all to `super().__init__()` |
 | Class alias | `game_interfaces/wow.py` (end) | Factory expects `module.GameInterface`, class is `WoWGameInterface` | Added `GameInterface = WoWGameInterface` |
-| `manager_slug` | `conversation_managers/wow_conversation_manager.py` | Missing `manager_slug` attribute → addon doesn't register | Rewrote with `manager_slug`, `valid_games`, `ConversationManager` class, `await_and_setup_conversation()` implementation |
+| `/cm` player input | `MantellaWoW/MantellaWoW.lua` + `game_interfaces/wow.py` | No way to send player text to the backend from WoW | Added `/cm` slash command and EditBox polling reader |
+| `manager_slug` | `conversation_managers/wow_conversation_manager.py` | Missing `manager_slug` attribute → addon doesn't register | Rewrote with `manager_slug`, `valid_games`, `ConversationManager` class, `await_and_setup_conversation()` and `step()` implementation |
 | Stub character manager | `character_managers/wow_character_manager.py` | Imports non-existent `skyrim_character_manager` | Replaced with minimal stub: `manager_slug`, `valid_games`, `Character` class |
 | Stub character generator | `character_generators/wow_character_generator.py` | Imports non-existent `skyrim_character_generator` | Replaced with minimal stub: `generator_name`, `Character` class |
 | Stub character DB | `character_db/wow_character_db.py` | Imports non-existent `skyrim_character_db` | Replaced with minimal stub: `db_slug`, `valid_games`, `CharacterDB` class |
