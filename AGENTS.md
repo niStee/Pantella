@@ -3,7 +3,7 @@
 > Parent: [~/AGENTS.md](../../AGENTS.md) — environment-wide · [~/Projects/AGENTS.md](../AGENTS.md) — project index
 > Generated: 2026-07-04 · Commit: `d4773e4a` · Branch: `dev/pantella-wow`
 
-Public GitHub fork of [Pantella](https://github.com/Pathos14489/Pantella) — Skyrim/FO4/FNV/Oblivion mod for natural speech interaction with NPCs via LLM inference. This fork is maintained as an upstream-compatible mirror; World of Warcraft integration lives in the separate [pantella-wow](https://github.com/niStee/pantella-wow) repo.
+Public GitHub fork of [Pantella](https://github.com/Pathos14489/Pantella) — Skyrim/FO4/FNV/Oblivion mod for natural speech interaction with NPCs via LLM inference. This fork is maintained as an upstream-compatible mirror; World of Warcraft integration lives in the separate [pantella-wow](https://github.com/niStee/pantella-wow) repo, which is included here as a Git submodule at `addons/pantella-wow`. Run `git submodule update --init --recursive` after cloning to populate it.
 
 ## Stack
 
@@ -189,7 +189,8 @@ These fixes are committed to the `dev/pantella-wow` branch of this fork. They we
 | Banlist `llama_cpp_python` | `src/module_banlist` | Broken `llama.dll` causes `KeyError: 'llama_cpp_python'` crash | Added `llama_cpp_python` to banlist |
 | Banlist `faster_whisper` | `src/module_banlist` | Silent crash during import in detached sessions | Added `faster_whisper` to banlist |
 | Default LLM fallback | `src/language_model.py` line 59 | `LLM_Types["default"] = LLM_Types[default]` crashes when default unavailable | Wrapped in try/except, falls back to first available engine |
-| `prompt_styles/wow_prompt_style.json` | `prompt_styles/` | `wow_prompt_style` referenced by interface config but didn't exist | Created minimal WoW prompt style with both `message_seperator` and `message_separator` keys |
+
+> WoW-specific prompt styles and runtime helpers have been moved to the `pantella-wow` addon submodule; they are no longer tracked in the core fork.
 
 ### Player Input Channel
 
