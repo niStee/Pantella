@@ -1,5 +1,5 @@
 PyAudio==0.2.14
-requests==2.33.1
+requests==2.33.0
 pyttsx3==2.90
 stream2sentence==0.2.2
 fastapi>=0.104.1
@@ -13,4 +13,4 @@ uvicorn
 cutlet
 fugashi[unidic-lite]
 coqui-tts
-transformers>=4.57.3
+transformers>=5.3.0
