@@ -288,6 +288,19 @@ SavedVariables ────file──────► mtime poll (fallback/persis
 | LibSerpix | Pixel encoding (CBOR via pixel columns) | Proof of concept |
 | ChattyLittleNPC | Pre-generated AI voice packs, no IPC | Production (different approach) |
 
+#### Runtime Verification (2026-07-12)
+
+| Step | Result | Notes |
+|------|--------|-------|
+| Backend startup with hotfix `c3f2eae` | ✅ Pass | WoW conversation manager loads, reaches `WoW: Waiting for player input...` |
+| `wow_game_interface` registered | ✅ Pass | `Interface_Types` contains `wow_game_interface` |
+| Character stubs (`wow_character_manager`, `wow_character_db`, `wow_character_generator`) | ✅ Pass | No import errors; `base_db` resolves correctly |
+| WoW window detection | ✅ Pass | `FindWindow("waApplication Window", None)` returns a valid HWND for WoW 12.0.7 |
+| `MantellaWoW_State` EditBox enumeration | ❌ Fail | `EnumChildWindows` does **not** find the EditBox; WoW 12.0+ UI frames are not Win32 controls |
+| `/cm` input end-to-end | ❌ Blocked | Input cannot reach the backend via the current EditBox/WM_GETTEXT implementation |
+
+**Conclusion:** The `/cm` slash command stores state correctly in the Lua addon, but the Python-side reader that relies on Win32 `WM_GETTEXT` cannot access it in WoW Midnight (12.0+). This confirms the architectural finding in ADR-001: the EditBox transport must be retired in favor of pixel encoding, combat-log messages, or SavedVariables polling.
+
 ### Dependency Updates
 
 This fork tracks upstream for dependency updates. Dependabot version-update pull requests on `niStee/Pantella` are closed intentionally; security alerts remain enabled. If a dependency change is needed specifically for WoW work, apply it on `dev/pantella-wow`.
