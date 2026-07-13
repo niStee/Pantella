@@ -1,12 +1,8 @@
 name: Security Audit
 
 on:
-  push:
-    branches: [main, master, dev/pantella-wow]
   pull_request:
     branches: [main, master, dev/pantella-wow]
-  schedule:
-    - cron: '0 6 * * 1'  # Weekly Monday 6am UTC
   workflow_dispatch:
 
 permissions:
