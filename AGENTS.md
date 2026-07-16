@@ -1,7 +1,7 @@
 # Pantella
 
 > Parent: [~/AGENTS.md](../../AGENTS.md) — environment-wide · [~/Projects/AGENTS.md](../AGENTS.md) — project index
-> Generated: 2026-07-04 · Commit: `d4773e4a` · Branch: `dev/pantella-wow`
+> Updated: 2026-07-16 · Fork-specific operating guidance
 
 Public GitHub fork of [Pantella](https://github.com/Pathos14489/Pantella) — Skyrim/FO4/FNV/Oblivion mod for natural speech interaction with NPCs via LLM inference. This fork is maintained as an upstream-compatible mirror; World of Warcraft integration lives in the separate [pantella-wow](https://github.com/niStee/pantella-wow) repo, which is included here as a Git submodule at `addons/pantella-wow`. Run `git submodule update --init --recursive` after cloning to populate it.
 
@@ -113,32 +113,45 @@ Keep `main` as close to upstream as possible. All fork-specific work (WoW integr
 ### Upstream Sync
 
 - `.github/workflows/sync-upstream.yml` runs daily and on demand.
-- It fetches `Pathos14489/Pantella:main` and **merges** it into `niStee/Pantella:main`.
-- The merge-based approach preserves fork-specific commits (the workflow file and `.gitignore` entries) instead of force-resetting the branch.
-- Trigger manually from the repo’s Actions tab if you need an immediate sync.
+- It fetches `Pathos14489/Pantella:main` and opens a `sync/upstream-main` pull request to `main`; it does not update `main` directly.
+- Review and merge the sync PR first. Then open a `main` to `dev/pantella-wow` PR and merge it, preferably as a merge commit, to retain shared ancestry.
+- Do not rebase `dev/pantella-wow` onto `main`. Feature branches target `dev/pantella-wow`.
+- Trigger the workflow manually from the repo’s Actions tab when an immediate upstream sync is needed.
 
 ### `pantella-wow` Addon Layout
 
-The WoW addon has its own repository (`niStee/pantella-wow`) and is **not** a submodule of this fork. To work locally:
+The WoW addon has its own repository (`niStee/pantella-wow`) and is also
+pinned by this fork as the `addons/pantella-wow` submodule. The runtime uses
+that pinned submodule; a separate checkout is for direct addon development.
 
-- Linux/macOS: clone `pantella-wow` anywhere (e.g. `~/Projects/pantella-wow`). You may also keep a checkout at `Pantella/addons/pantella-wow/` for convenience.
-- Windows: clone to `D:\repos\pantella-wow` (or another path outside `Program Files`) and junction it into WoW’s AddOns folder.
+- Linux: use `~/Projects/Pantella-Core-Control` for fork administration and
+  `~/Projects/Pantella-Upstream` for upstream-facing changes. The former owns
+  the Git object store and worktrees; the latter is a sparse `main` worktree.
+- Windows: use `D:\repos\Pantella-WoW-Addon-Standalone` for direct addon
+  development. It is not the live WoW junction target.
 
-`Pantella/addons/pantella-wow/` and `.omo/` are gitignored so the standalone clone does not show up as untracked when working on this repo.
+Run `git submodule update --init --filter=blob:none addons/pantella-wow` in a
+new runtime worktree. Do not replace the submodule with a junction.
 
 ### Windows Embedded-Python WoW Runtime
 
-The Windows machine (`192.168.178.115`, user `2glea`) runs Pantella via the Launcher's embedded Python, not conda/venv. The layout uses a **standalone addon + dual junction** architecture: the canonical addon repo at `D:\repos\pantella-wow` is linked into both the Pantella core checkout and the WoW AddOns folder via NTFS junctions. This matches the `ai-infra/scripts/bootstrap-windows.ps1.tmpl` template.
+The Windows machine (`192.168.178.115`, user `2glea`) runs Pantella via the
+Launcher's embedded Python, not conda/venv. The active layout uses one normal
+partial control clone and a sparse linked runtime worktree. The game junction
+targets the runtime worktree's pinned addon submodule, so the backend and WoW
+load the same revision.
 
 **Layout:**
 
 | Path | Purpose |
 |------|---------|
 | `D:\repos\Pantella-Launcher\Pantella_Launcher\` | Launcher root with `python-3.10.11-embed\python.exe` |
-| `D:\repos\Pantella\` | Active Pantella core checkout (this fork, `dev/pantella-wow` branch) |
-| `D:\repos\pantella-wow\` | Canonical WoW addon repo (`windows-runtime-fixes` local branch, not pushed) |
-| `D:\repos\Pantella\addons\pantella-wow\` | **Junction** → `D:\repos\pantella-wow` (backend loads addon from here) |
-| `C:\games\World of Warcraft\_retail_\Interface\AddOns\MantellaWoW\` | **Junction** → `D:\repos\pantella-wow\MantellaWoW` (game loads addon from here) |
+| `D:\repos\Pantella-Core-Control\` | Shared control clone with `origin` and `upstream` remotes |
+| `D:\repos\Pantella-Core-WoW-Runtime\` | Active sparse worktree on `dev/pantella-wow` |
+| `D:\repos\Pantella-WoW-Addon-Standalone\` | Separate `niStee/pantella-wow` checkout for addon development |
+| `D:\repos\Pantella-Core-WoW-Runtime\addons\pantella-wow\` | Pinned addon submodule loaded by the backend |
+| `C:\games\World of Warcraft\_retail_\Interface\AddOns\MantellaWoW\` | **Junction** → `D:\repos\Pantella-Core-WoW-Runtime\addons\pantella-wow\MantellaWoW` |
+| `%LOCALAPPDATA%\Pantella-Core-WoW-Runtime\` | Local task launchers, backups, and smoke-test logs |
 | `C:\games\World of Warcraft\_retail_\` | WoW Midnight (12.0.7.68275) installation |
 
 **WoW version details (Midnight expansion):**
@@ -170,9 +183,9 @@ The embedded Python's `python310._pth` only puts the embed directory on `sys.pat
 ```python
 # pantella_wow_bootstrap.py — placed in the repo root
 import os, runpy, sys
-os.chdir(r'D:\repos\Pantella')
-sys.path.insert(0, r'D:\repos\Pantella')
-runpy.run_path(r'D:\repos\Pantella\main.py', run_name='__main__')
+os.chdir(r'D:\repos\Pantella-Core-WoW-Runtime')
+sys.path.insert(0, r'D:\repos\Pantella-Core-WoW-Runtime')
+runpy.run_path(r'D:\repos\Pantella-Core-WoW-Runtime\main.py', run_name='__main__')
 ```
 
 **Launch methods (ordered by reliability):**
@@ -227,7 +240,7 @@ These fixes address compatibility issues between the pantella-wow addon and the 
 | Stub character generator | `character_generators/wow_character_generator.py` | Imports non-existent `skyrim_character_generator` | Replaced with minimal stub: `generator_name`, `Character` class |
 | Stub character DB | `character_db/wow_character_db.py` | Imports non-existent `skyrim_character_db` | Replaced with minimal stub: `db_slug`, `valid_games`, `CharacterDB` class |
 | Interface config | `interface_configs/wow.json` | `character_db: "wow_character_db"` not in DB_Types (dir is `character_db/` singular, code expects `character_dbs/` plural) | Changed to `base_db` |
-| Overlay copy | `overlay.py` | Present in standalone repo but missing from active checkout | Copied from `D:\repos\pantella-wow\overlay.py` |
+| Overlay copy | `overlay.py` | Present in standalone repo but missing from active checkout | Copied from `D:\repos\Pantella-WoW-Addon-Standalone\overlay.py` |
 
 ### WoW Addon IPC Architecture (Research Findings, July 2026)
 
