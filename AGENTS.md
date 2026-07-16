@@ -115,14 +115,14 @@ Keep `main` as close to upstream as possible. All fork-specific work (WoW integr
 - `.github/workflows/sync-upstream.yml` runs daily and on demand.
 - It fetches `Pathos14489/Pantella:main` and **merges** it into `niStee/Pantella:main`.
 - The merge-based approach preserves fork-specific commits (the workflow file and `.gitignore` entries) instead of force-resetting the branch.
-- Trigger manually from the repo’s Actions tab if you need an immediate sync.
+- Trigger manually from the repo's Actions tab if you need an immediate sync.
 
 ### `pantella-wow` Addon Layout
 
 The WoW addon has its own repository (`niStee/pantella-wow`) and is **not** a submodule of this fork. To work locally:
 
 - Linux/macOS: clone `pantella-wow` anywhere (e.g. `~/Projects/pantella-wow`). You may also keep a checkout at `Pantella/addons/pantella-wow/` for convenience.
-- Windows: clone to `D:\repos\pantella-wow` (or another path outside `Program Files`) and junction it into WoW’s AddOns folder.
+- Windows: clone to `D:\repos\pantella-wow` (or another path outside `Program Files`) and junction it into WoW's AddOns folder.
 
 `Pantella/addons/pantella-wow/` and `.omo/` are gitignored so the standalone clone does not show up as untracked when working on this repo.
 
@@ -154,8 +154,10 @@ All config files must be written via Python `json.dump()` — PowerShell `Set-Co
 
 - `startup.json` — `default_interface: "wow"`, `first_time_setup: false`, `always_open_interface_selection: false`
 - `config.json` — `{"game_id": "wow"}`
-- `configs/wow_config.json` — TTS (`piper_binary`), inference engine (`openai_api`), model (`meta-llama/llama-3.3-70b-instruct:free`), `alternative_openai_api_base` set to OpenRouter, `stt_enabled: false`, `chromadb_memory_editor_enabled: false` (in both root and `chromadb_memory` section), `remove_mei_folders: false`
+- `configs/wow_config.json` — TTS (`piper_binary`), inference engine (`openai_api`), model (`openrouter/free` — dynamic OpenRouter free pool; best-effort, no stable model identity), `alternative_openai_api_base` set to `https://openrouter.ai/api/v1`, `stt_enabled: false`, `chromadb_memory_editor_enabled: false` (in both root and `chromadb_memory` section), `remove_mei_folders: false`
 - `GPT_SECRET_KEY.txt` — OpenRouter API key (retrieved from KWallet `secret-tool lookup openrouter api-key`)
+
+> **LLM routing note:** Pantella is a standalone runtime application and is not behind LiteLLM. It calls OpenRouter directly via the `openai_api` engine. `openrouter/free` is the dynamic free-pool selector — it routes to whichever eligible free model OpenRouter has available at request time. This is best-effort: NPC personality and response quality may vary between requests, and 429s are possible under load. If the dynamic pool proves unsuitable, choose a paid pinned OpenRouter model in `configs/wow_config.json` directly; do **not** introduce a LiteLLM fallback for Pantella.
 
 **Bootstrap workaround (`pantella_wow_bootstrap.py`):**
 
