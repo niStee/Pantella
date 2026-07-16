@@ -154,7 +154,13 @@ All config files must be written via Python `json.dump()` — PowerShell `Set-Co
 
 - `startup.json` — `default_interface: "wow"`, `first_time_setup: false`, `always_open_interface_selection: false`
 - `config.json` — `{"game_id": "wow"}`
-- `configs/wow_config.json` — TTS (`piper_binary`), inference engine (`openai_api`), model (`meta-llama/llama-3.3-70b-instruct:free`), `alternative_openai_api_base` set to OpenRouter, `stt_enabled: false`, `chromadb_memory_editor_enabled: false` (in both root and `chromadb_memory` section), `remove_mei_folders: false`
+- `configs/wow_config.json` — TTS (`piper_binary`), inference engine (`openai_api`), `openai_model` (`openrouter/free` — dynamic OpenRouter free pool; best-effort with no stable model identity), `alternative_openai_api_base` set to `https://openrouter.ai/api/v1`, `stt_enabled: false`, `chromadb_memory_editor_enabled: false` (in both root and `chromadb_memory` section), `remove_mei_folders: false`
+
+> **LLM routing:** Pantella calls OpenRouter directly through the `openai_api`
+> engine; it is not behind LiteLLM. `openrouter/free` is best-effort, so NPC
+> quality may vary and 429s remain possible. If the pool is unsuitable, choose
+> a Pantella-local paid pinned OpenRouter model rather than adding LiteLLM
+> fallback.
 - `GPT_SECRET_KEY.txt` — OpenRouter API key (retrieved from KWallet `secret-tool lookup openrouter api-key`)
 
 **Bootstrap workaround (`pantella_wow_bootstrap.py`):**
