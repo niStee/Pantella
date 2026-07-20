@@ -30,8 +30,8 @@ class base_Tokenizer(): # Tokenizes(only availble for counting the tokens in a s
         return self.config.message_signifier
     
     @property
-    def message_separator(self):
-        return self.config.message_separator
+    def message_seperator(self):
+        return self.config.message_seperator
     
     @property
     def message_format(self):
