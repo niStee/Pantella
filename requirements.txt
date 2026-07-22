@@ -137,8 +137,8 @@ anyascii==0.3.3
 coqui-tts==0.27.5
 coqui-tts-trainer==0.3.3
 omnivoice==0.1.5
+pocket-tts @ git+https://github.com/Pathos14489/pocket-tts.git
 accelerate==1.13.0
---find-links https://download.pytorch.org/whl/cu128
 torch==2.8.0
 torchvision==0.23.0
 torchaudio==2.8.0
