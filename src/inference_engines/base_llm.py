@@ -234,8 +234,8 @@ class base_LLM():
     def stop(self): # stop strings for the LLM -- stops generation when they're encountered. Either at the API level if they're supported, inference engine level if your chosen method of inference supprts it, or here after the tokens are generated if they make it through the other two layers.
         prompt_style = self._prompt_style
         stop = list(prompt_style["stop"])
-        if "message_seperator" in prompt_style and prompt_style["message_seperator"] != None and prompt_style["message_seperator"] != "":
-            stop.append(prompt_style["message_seperator"])
+        if "message_separator" in prompt_style and prompt_style["message_separator"] != None and prompt_style["message_separator"] != "":
+            stop.append(prompt_style["message_separator"])
         stop.append(prompt_style["EOS_token"])
         stop.append(prompt_style["BOS_token"])
         if not self.character_manager.language["allow_npc_roleplay"]:
@@ -314,8 +314,8 @@ class base_LLM():
         return self._prompt_style['message_format']
     
     @property
-    def message_seperator(self):
-        return self._prompt_style['message_seperator']
+    def message_separator(self):
+        return self._prompt_style['message_separator']
 
     @property
     def max_tokens(self):

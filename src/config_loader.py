@@ -489,8 +489,8 @@ class ConfigLoader:
     def role_separator(self):
         return self._prompt_style["style"]["role_separator"]
     @property
-    def message_seperator(self):
-        return self._prompt_style["style"]["message_seperator"]
+    def message_separator(self):
+        return self._prompt_style["style"]["message_separator"]
     @property
     def message_format(self):
         return self._prompt_style["style"]["message_format"]

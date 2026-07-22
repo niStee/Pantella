@@ -35,15 +35,15 @@
         "BOS_token": "<|turn>",
         "EOS_token": "<turn|>",
         "message_signifier": ":",
-        "role_seperator": "\n",
-        "message_seperator": "\n",
+        "role_separator": "\n",
+        "message_separator": "\n",
         "thinking": true,
         "no_think_empty_thoughts": true,
         "start_thinking_token": "<|channel>thought\n",
         "end_thinking_token": "<channel|>",
         "thinking_token_prefix": "",
         "thinking_token_suffix": "",
-        "message_format": "[BOS_token][role_prefix_insert][role_seperator][thinking_token_prefix][start_thinking_token][thought_content][end_thinking_token][thinking_token_suffix][name][message_signifier][content][role_suffix_insert][EOS_token][message_seperator]",
+        "message_format": "[BOS_token][role_prefix_insert][role_separator][thinking_token_prefix][start_thinking_token][thought_content][end_thinking_token][thinking_token_suffix][name][message_signifier][content][role_suffix_insert][EOS_token][message_separator]",
         "chat_format": "[messages]",
         "message_roles": [
             {
