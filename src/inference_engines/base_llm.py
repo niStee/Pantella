@@ -1032,7 +1032,19 @@ class base_LLM():
             print("Generating normal response...")
             for chunk in self.acreate(self.get_context(), message_prefix=message_prefix, force_speaker=force_speaker):
                 # logging.debug(f"Raw Chunk:",chunk)
-                yield chunk
+                formatted_chunk = self.format_content(chunk)
+                # If more than 2 spaces, split into single word chunks and yield each word separately, otherwise yield the whole chunk
+                if len(formatted_chunk.split(" ")) > 2 and self.config.break_up_big_chunks:
+                    logging.info(f"Breaking up big chunk into single word chunks: {formatted_chunk}")
+                    words = formatted_chunk.split(" ")
+                    for i in range(len(words)):
+                        word = words[i]
+                        if i == len(words) - 1 and not formatted_chunk.endswith(" "):
+                            yield word
+                        else:
+                            yield word + " "
+                else:
+                    yield formatted_chunk
         
     def format_content(self, chunk):
         # TODO: This is a temporary fix. The LLM class should be returning a string only, but some inference engines don't currently. This will be fixed in the future.
@@ -1292,8 +1304,8 @@ class base_LLM():
                             if self.cot_enabled and self.cot_supported and self.conversation_manager.thought_process is not None:
                                 chunk = chunk["response_to_user"]
                         content = chunk # example: ".* Hello"
-                    else:
-                        content = self.format_content(chunk) # example: ".* Hello"
+                    # else:
+                    #     content = self.format_content(chunk) # example: ".* Hello"
                     content = content.replace("“", "\"").replace("”", "\"").replace("‘", "'").replace("’", "'").replace("—", "-").replace("…", "...")
                     logging.out(f"Content: {content}")
                     if content is None:
