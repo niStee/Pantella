@@ -1303,7 +1303,7 @@ class base_LLM():
                             logging.info(f"Response Chunk:",chunk)
                             if self.cot_enabled and self.cot_supported and self.conversation_manager.thought_process is not None:
                                 chunk = chunk["response_to_user"]
-                        content = chunk # example: ".* Hello"
+                    content = chunk # example: ".* Hello"
                     # else:
                     #     content = self.format_content(chunk) # example: ".* Hello"
                     content = content.replace("“", "\"").replace("”", "\"").replace("‘", "'").replace("’", "'").replace("—", "-").replace("…", "...")
