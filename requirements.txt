@@ -130,11 +130,19 @@ yarl==1.23.0
 pykakasi==2.3.0
 epitran==1.35.1
 editables==0.6
+sniffio==1.3.1
+typing-inspection==0.4.2
+annotated-types==0.8.0
+certifi==2026.7.22
+httpcore==1.0.9
+h11==0.16.0
+anyio==4.14.2
+exceptiongroup==1.3.1
 -e ./xtts-api-server-pantella
 -e "git+https://github.com/Pathos14489/moshi.git#egg=moshi&subdirectory=moshi"
 llama-cpp-python @ git+https://github.com/JamePeng/llama-cpp-python.git
 anyascii==0.3.3
-coqui-tts==0.27.5
+git+https://github.com/Pathos14489/coqui-ai-TTS.git
 coqui-tts-trainer==0.3.3
 omnivoice==0.1.5
 pocket-tts @ git+https://github.com/Pathos14489/pocket-tts.git
