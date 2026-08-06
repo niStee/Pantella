@@ -53,9 +53,9 @@ class CharacterDB(BaseCharacterDB):
         for key in formatted_character:
             if str(formatted_character[key]).lower() == "nan":
                 formatted_character[key] = ""
-        if "ref_id" in formatted_character and formatted_character["ref_id"] != None and len(formatted_character["ref_id"]) > 6:
+        if "ref_id" in formatted_character and formatted_character["ref_id"]  is not None and len(formatted_character["ref_id"]) > 6:
             formatted_character["ref_id"] = formatted_character["ref_id"][-6:]
-        if "base_id" in formatted_character and formatted_character["base_id"] != None and len(formatted_character["base_id"]) > 6:
+        if "base_id" in formatted_character and formatted_character["base_id"]  is not None and len(formatted_character["base_id"]) > 6:
             formatted_character["base_id"] = formatted_character["base_id"][-6:]
         # print(json.dumps(character, indent=4))
         # print(json.dumps(formatted_character, indent=4))
