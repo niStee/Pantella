@@ -1,0 +1,7 @@
+{
+    "cu131": "https://github.com/JamePeng/llama-cpp-python/releases/download/v0.3.43-cu131-win-20260717/llama_cpp_python-0.3.43+cu131-cp310-cp310-win_amd64.whl",
+    "cu130": "https://github.com/JamePeng/llama-cpp-python/releases/download/v0.3.43-cu130-win-20260717/llama_cpp_python-0.3.43+cu130-cp310-cp310-win_amd64.whl",
+    "cu128": "https://github.com/JamePeng/llama-cpp-python/releases/download/v0.3.43-cu128-win-20260717/llama_cpp_python-0.3.43+cu128-cp310-cp310-win_amd64.whl",
+    "cu126": "https://github.com/JamePeng/llama-cpp-python/releases/download/v0.3.43-cu126-win-20260717/llama_cpp_python-0.3.43+cu126-cp310-cp310-win_amd64.whl",
+    "cu124": "https://github.com/JamePeng/llama-cpp-python/releases/download/v0.3.43-cu124-win-20260718/llama_cpp_python-0.3.43+cu124-cp310-cp310-win_amd64.whl"
+}

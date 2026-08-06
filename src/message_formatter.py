@@ -38,9 +38,9 @@ class PromptStyle(BaseModel):
     BOS_token: str = "<|start_header_id|>"
     EOS_token: str = "<|eot_id|>"
     message_signifier: str = ": "
-    role_seperator: str = "<|end_header_id|>\n\n"
-    message_seperator: str = ""
-    message_format: str = "[BOS_token][role_prefix_insert][role_seperator][name][message_signifier][content][role_suffix_insert][EOS_token][message_seperator]"
+    role_separator: str = "<|end_header_id|>\n\n"
+    message_separator: str = ""
+    message_format: str = "[BOS_token][role_prefix_insert][role_separator][name][message_signifier][content][role_suffix_insert][EOS_token][message_separator]"
     chat_format: str = "[messages]"
     thinking: bool = False
     keep_empty_thoughts: bool = True
@@ -80,8 +80,8 @@ class MessageFormatter(): # Tokenizes(only availble for counting the tokens in a
         self.BOS_token = ps.BOS_token
         self.EOS_token = ps.EOS_token
         self.message_signifier = ps.message_signifier
-        self.role_seperator = ps.role_seperator
-        self.message_seperator = ps.message_seperator
+        self.role_separator = ps.role_separator
+        self.message_separator = ps.message_separator
         self.message_format = ps.message_format
         self.chat_format = ps.chat_format
         self.thinking = ps.thinking
@@ -133,16 +133,16 @@ class MessageFormatter(): # Tokenizes(only availble for counting the tokens in a
         if not name:
             name = ""
             msg_sig = ""
-        role_sep = self.role_seperator
+        role_sep = self.role_separator
         if role == "":
             role_sep = ""
 
         parsed_msg = parsed_msg.replace("[BOS_token]",self.BOS_token)
             
         if role == "":
-            parsed_msg = parsed_msg.split("[role_seperator]")[0]
+            parsed_msg = parsed_msg.split("[role_separator]")[0]
         else:
-            parsed_msg = parsed_msg.replace("[role_seperator]",role_sep)
+            parsed_msg = parsed_msg.replace("[role_separator]",role_sep)
 
         if name == "":
             parsed_msg = parsed_msg.replace("[name]", "")
@@ -168,7 +168,7 @@ class MessageFormatter(): # Tokenizes(only availble for counting the tokens in a
 
         parsed_msg = parsed_msg.replace("[role_suffix_insert]",self.get_role_suffix(role))
         parsed_msg = parsed_msg.replace("[EOS_token]",self.EOS_token)
-        parsed_msg = parsed_msg.replace("[message_seperator]",self.message_seperator)
+        parsed_msg = parsed_msg.replace("[message_separator]",self.message_separator)
         if self.thinking and thinking and role == "assistant":
             parsed_msg = parsed_msg.replace("[thought_content]", reasoning)
         else:
@@ -184,16 +184,16 @@ class MessageFormatter(): # Tokenizes(only availble for counting the tokens in a
         if not name:
             name = ""
             msg_sig = ""
-        role_sep = self.role_seperator
+        role_sep = self.role_separator
         if role == "":
             role_sep = ""
 
         parsed_msg_part = parsed_msg_part.replace("[BOS_token]",self.BOS_token)
             
         if role == "":
-            parsed_msg_part = parsed_msg_part.split("[role_seperator]")[0]
+            parsed_msg_part = parsed_msg_part.split("[role_separator]")[0]
         else:
-            parsed_msg_part = parsed_msg_part.replace("[role_seperator]",role_sep)
+            parsed_msg_part = parsed_msg_part.replace("[role_separator]",role_sep)
 
         if name == "":
             parsed_msg_part = parsed_msg_part.replace("[name]", "")
@@ -219,7 +219,7 @@ class MessageFormatter(): # Tokenizes(only availble for counting the tokens in a
 
         parsed_msg_part = parsed_msg_part.replace("[role_suffix_insert]",self.get_role_suffix(role))
         parsed_msg_part = parsed_msg_part.replace("[EOS_token]",self.EOS_token)
-        parsed_msg_part = parsed_msg_part.replace("[message_seperator]",self.message_seperator)
+        parsed_msg_part = parsed_msg_part.replace("[message_separator]",self.message_separator)
         if self.thinking and thinking and role == "assistant":
             parsed_msg_part = parsed_msg_part.split("[thought_content]")[0]
         else:
@@ -235,16 +235,16 @@ class MessageFormatter(): # Tokenizes(only availble for counting the tokens in a
         if not name:
             name = ""
             msg_sig = ""
-        role_sep = self.role_seperator
+        role_sep = self.role_separator
         if role == "":
             role_sep = ""
 
         parsed_msg_part = parsed_msg_part.replace("[BOS_token]",self.BOS_token)
             
         if role == "":
-            parsed_msg_part = parsed_msg_part.split("[role_seperator]")[1]
+            parsed_msg_part = parsed_msg_part.split("[role_separator]")[1]
         else:
-            parsed_msg_part = parsed_msg_part.replace("[role_seperator]",role_sep)
+            parsed_msg_part = parsed_msg_part.replace("[role_separator]",role_sep)
 
         if name == "":
             parsed_msg_part = parsed_msg_part.replace("[name]", "")
@@ -270,7 +270,7 @@ class MessageFormatter(): # Tokenizes(only availble for counting the tokens in a
 
         parsed_msg_part = parsed_msg_part.replace("[role_suffix_insert]",self.get_role_suffix(role))
         parsed_msg_part = parsed_msg_part.replace("[EOS_token]",self.EOS_token)
-        parsed_msg_part = parsed_msg_part.replace("[message_seperator]",self.message_seperator)
+        parsed_msg_part = parsed_msg_part.replace("[message_separator]",self.message_separator)
         if self.thinking and thinking and role == "assistant":
             parsed_msg_part = parsed_msg_part.split("[thought_content]")[1]
         else:
