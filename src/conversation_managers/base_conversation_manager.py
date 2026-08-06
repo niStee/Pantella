@@ -211,7 +211,3 @@ class BaseConversationManager:
         """Reload the conversation - Used when the conversation has ended or the conversation limit has been reached"""
         self.character_manager.reached_conversation_limit()
         self.messages = self.messages[-self.config.reload_buffer:] # save the last few messages to reload the conversation
-
-    def shutdown(self):
-        """Override in subclasses to perform cleanup. Default: no-op."""
-        pass

@@ -63,6 +63,7 @@ Note: Pantella is not yet bug free or ready for all users. Please read the entir
 		- [Windows Users](#windows-users)
 		- [Linux Users](#linux-users)
 	- [9 - Restart Your Computer](#9---restart-your-computer)
+	- [10 - Git Long Paths (temporary workaround for Windows users, will be handled by the launcher in the future)](#10---git-long-paths-temporary-workaround-for-windows-users-will-be-handled-by-the-launcher-in-the-future)
 - [Installation (Launcher) - Windows Only at this time](#installation-launcher---windows-only-at-this-time)
 	- [1 - Getting Started - Installing the Launcher](#1---getting-started---installing-the-launcher)
 	- [2 - Configuring the Launcher](#2---configuring-the-launcher)
@@ -77,7 +78,8 @@ Note: Pantella is not yet bug free or ready for all users. Please read the entir
 		- [3.4 - Configure Vision Settings (Optional)](#34---configure-vision-settings-optional)
 	- [4 - Have Fun!](#4---have-fun)
 - [Installation (Non-Launcher) - Linux and Windows](#installation-non-launcher---linux-and-windows)
-	- [Running with Conda (recommended)](#running-with-conda-recommended)
+	- [Running with Conda via run.sh (recommended)](#running-with-conda-via-runsh-recommended)
+	- [Running with Conda](#running-with-conda)
 	- [Running with venv](#running-with-venv)
 	- [Running without venv (generally not recommended)](#running-without-venv-generally-not-recommended)
 	- [Adding New NPCs](#adding-new-npcs)
@@ -168,6 +170,9 @@ When a character is first encountered, if a character entry is not found in the 
 Pantella currently supports Skyrim Special Edition, Skyrim Anniversary Edition, Skyrim VR, Fallout New Vegas and (technically) Fallout 3 via Tale of Two Wastelands. Support for other games can be added by adding another game_interface module and adding the appropriate character entries to the characters directory. If you want to add support for another game and don't know where to start or what help, feel free to reach out to me on Discord or open an issue on GitHub and we can discuss how to do it. Enderal is also somewhat supported, but there are no character entries for Enderal included with Pantella at this time.
 
 # Requirements
+
+Disclaimer: Linux Support is currently the most tested, Windows support is still in development, is tested less, and may have some issues. If you are using Windows, please read the entire README before installing and reach out on Discord or GitHub if you have any questions or issues. It may have some issues that need to be ironed out, but I'm still working on it and will try to help anyone who needs it.
+
 ## Hardware Requirements
 There are no discovered minimum requirements at the time of writing for Pantella. Pantella needs a certain amount of hardware allocation to run successfully for specific setups though, and if this is being soaked up by other hardware intensive mods, it may crash.
 
@@ -316,6 +321,14 @@ Do install the plugins from the above pages if you're on Linux, as the launcher 
 
 After installing the above requirements, it's required to restart your computer to ensure all the changes take effect and are usable by Pantella. If you don't restart your computer, you may encounter errors when trying to run Pantella, and it may not work correctly until you do. Especially for FFmpeg and the Microsoft C++ Build Tools, a restart is required for them to work correctly with Pantella.
 
+## 10 - Git Long Paths (temporary workaround for Windows users, will be handled by the launcher in the future)
+
+After restarting your computer, you will need to enable long paths in Git. This is required for Pantella to work correctly, as some of the files and directories used by Pantella have long paths that exceed the default limit of 260 characters in Windows. To enable long paths in Git, open a command prompt and run the following command:
+
+```
+git config --system core.longpaths true
+```
+
 # Installation (Launcher) - Windows Only at this time
 ## 1 - Getting Started - Installing the Launcher
 
@@ -326,7 +339,9 @@ First click on the latest release under Releases. And follow the installation in
 2. Download the Python environment necessary for your repo of choice. You can download only one or both, but at least one of them is necessary for the launcher to uh, do anything.
 	- **Pantella** requires `python-3.10.11-embed.7z`.
 	- **Mantella** requires `python-3.11.6-embed.7z`. 
-I recommend somewhere on the same drive as your game of choice, this will reduce latency caused by moving the voicelines from Pantella into the game directory, and also likely reduce how many writes are occurring to your drives, but somewhere like your desktop is also probably fine if you only have one drive. Once you've unpacked the release, go open the launcher.
+Then extract the selected zip into the launcher directory where the Pantella_Launcher.exe is. You should end up with a directory named after the python embed of your choice inside the launcher directory. You should see Pantella_Launcher.exe in the same directory as a folder called python-3.10.11-embed for example. I recommend installing the launcher somewhere on the same drive as your game of choice, this will reduce latency caused by moving the voicelines from Pantella into the game directory, and also likely reduce how many writes are occurring to your drives, but somewhere like your desktop is also probably fine if you only have one drive.
+
+Once you've unpacked the release, go open the launcher.
 
 ## 2 - Configuring the Launcher
 
@@ -376,7 +391,7 @@ Note from pre-tester: This is a good time to get a bagel to reward yourself.
 
 ## 3 - Run Pantella
 
-Now just click start for Pantella and let it perform first time set up. It will popup a bunch of windows and ask you to input a lot of stuff, this is expected, just follow the instructions on the windows and input the requested information. If you have any issues, please check out the [Troubleshooting section](#troubleshooting) or reach out on the Discord for support. We're here to help.reach out on the Discord. We're here to help.
+In the launcher just click start for Pantella and let it perform first time set up. It will popup a bunch of windows and ask you to input a lot of stuff, this is expected, just follow the instructions on the windows and input the requested information. If you have any issues, please check out the [Troubleshooting section](#troubleshooting) or reach out on the Discord for support. We're here to help.reach out on the Discord. We're here to help.
 
 ### 3.1 - Configure LLM Settings
 
@@ -400,24 +415,32 @@ You should be good to go! Whenever you want to use Pantella, please start the la
 # Installation (Non-Launcher) - Linux and Windows
 The source code for Pantella is included in this repo. Here are the quick steps to get set up:
 
-## Running with Conda (recommended)
+## Running with Conda via run.sh (recommended)
+1. Clone the repo to your machine with `git clone https://github.com/Pathos14489/Pantella` where you want the backend to be installed. This should be on the same drive as your game to reduce latency and drive wear, but somewhere like your desktop is also probably fine if you only have one drive.
+2. Run the `run.sh` script in your console. This will create a conda environment, install the required packages, and run Pantella. If you don't have conda installed, you can install it from [here](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html).
+3. Follow the first time setup instructions like normal.
+
+## Running with Conda
 1. Clone the repo to your machine with `git clone https://github.com/Pathos14489/Pantella` where you want the backend to be installed. This should be on the same drive as your game to reduce latency and drive wear, but somewhere like your desktop is also probably fine if you only have one drive.
 2. Create a conda environment via `conda create -n pantella python=3.10` in your console
 3. Start the environment in your console (`conda activate pantella`)
 4. Install the required packages via `pip install -r requirements.txt`
-5. Run Pantella via `main.py` in the parent directory and follow the first time setup instructions like normal.
+5. Install the torch with cuda 12.8 via `pip install -r cuda_torch_requirements.txt --force-reinstall --no-cache-dir --no-deps` or install torch with CUDA for your specific version of CUDA if you have a different version installed. You can find the correct command for your version of CUDA [here](https://pytorch.org/get-started/locally/).
+6. Run Pantella via `main.py` in the parent directory and follow the first time setup instructions like normal.
 
 ## Running with venv
 1. Clone the repo to your machine with `git clone https://github.com/Pathos14489/Pantella` where you want the backend to be installed. This should be on the same drive as your game to reduce latency and drive wear, but somewhere like your desktop is also probably fine if you only have one drive.
 2. Create a virtual environment via `py -3.10 -m venv PantellaEnv` in your console (Pantella requires Python 3.10.11, I've not had a chance to test it with 3.11 yet)
 3. Start the environment in your console (`.\PantellaEnv\Scripts\Activate`)
 4. Install the required packages via `pip install -r requirements.txt`
-5. Run Pantella via `main.py` in the parent directory and follow the first time setup instructions like normal.
+5. Install the torch with cuda 12.8 via `pip install -r cuda_torch_requirements.txt --force-reinstall --no-cache-dir --no-deps` or install torch with CUDA for your specific version of CUDA if you have a different version installed. You can find the correct command for your version of CUDA [here](https://pytorch.org/get-started/locally/).
+6. Run Pantella via `main.py` in the parent directory and follow the first time setup instructions like normal.
 
 ## Running without venv (generally not recommended)
 1. Clone the repo to your machine with `git clone https://github.com/Pathos14489/Pantella` where you want the backend to be installed. This should be on the same drive as your game to reduce latency and drive wear, but somewhere like your desktop is also probably fine if you only have one drive.
 2. Install the required packages via `pip install -r requirements.txt`
-3. Run Pantella via `main.py` in the parent directory and follow the first time setup instructions like normal.
+3. Install the torch with cuda 12.8 via `pip install -r cuda_torch_requirements.txt --force-reinstall --no-cache-dir --no-deps` or install torch with CUDA for your specific version of CUDA if you have a different version installed. You can find the correct command for your version of CUDA [here](https://pytorch.org/get-started/locally/).
+4. Run Pantella via `main.py` in the parent directory and follow the first time setup instructions like normal.
 
 If you have any trouble in getting the repo set up, please reach out on [Discord](https://discord.gg/M7Zw8mBY6r)!
 

@@ -144,7 +144,7 @@ class GameInterface(BaseGameInterface):
     @property
     def game_executable_path(self):
         if self.game_id == "skyrim":
-            return os.path.join(self.game_path, "Skyrim.exe")
+            return os.path.join(self.game_path, "SkyrimSE.exe")
         elif self.game_id == "fallout4":
             return os.path.join(self.game_path, "Fallout4.exe")
         elif self.game_id == "skyrimvr":
