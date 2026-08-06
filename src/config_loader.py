@@ -747,6 +747,7 @@ class ConfigLoader:
                 "min_conversation_length": 5,
                 "reload_buffer": 20,
                 # "reload_wait_time": 1,
+                "break_up_big_chunks": False,
             },
             "PromptStyle":{
                 "prompt_style_override": "",
@@ -961,6 +962,7 @@ class ConfigLoader:
                 "min_conversation_length": self.min_conversation_length,
                 "reload_buffer": self.reload_buffer,
                 # "reload_wait_time": self.reload_wait_time,
+                "break_up_big_chunks": self.break_up_big_chunks,
             },
             "PromptStyle":{
                 "prompt_style_override": self.prompt_style_override,
