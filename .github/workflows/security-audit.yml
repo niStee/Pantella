@@ -34,7 +34,7 @@ jobs:
           python-version: '3.10'
       - name: Install security tools
         run: |
-          pip install --no-deps --require-hashes -r requirements-security.txt
+          pip install --no-deps bandit pip-audit
       - name: Run pip-audit
         continue-on-error: true
         run: |
@@ -62,7 +62,7 @@ jobs:
           python-version: '3.10'
       - name: Install security tools
         run: |
-          pip install --no-deps --require-hashes -r requirements-security.txt
+          pip install --no-deps bandit pip-audit
       - name: Run bandit
         continue-on-error: true
         run: |
