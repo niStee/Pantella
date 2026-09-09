@@ -139,6 +139,6 @@ coqui-tts-trainer==0.3.3
 omnivoice==0.1.5
 accelerate==1.13.0
 --find-links https://download.pytorch.org/whl/cu128
-torch==2.12.1
+torch==2.11.0+cu128
 torchvision==0.23.0
 torchaudio==2.8.0
