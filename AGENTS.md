@@ -137,7 +137,7 @@ The WoW addon has its own repository (`niStee/pantella-wow`) and is **included a
 
 ### Windows Embedded-Python WoW Runtime
 
-The Windows machine (`192.168.178.115`, user `2glea`) runs Pantella via the Launcher's embedded Python, not conda/venv. The layout uses a **standalone addon + dual junction** architecture: the canonical addon repo at `D:\repos\pantella-wow` is linked into both the Pantella core checkout and the WoW AddOns folder via NTFS junctions. This matches the `ai-infra/scripts/bootstrap-windows.ps1.tmpl` template.
+The Windows machine (address and account are configured locally and not documented here) runs Pantella via the Launcher's embedded Python, not conda/venv. The layout uses a **standalone addon + dual junction** architecture: the canonical addon repo at `D:\repos\pantella-wow` is linked into both the Pantella core checkout and the WoW AddOns folder via NTFS junctions. This matches the `ai-infra/scripts/bootstrap-windows.ps1.tmpl` template.
 
 **Layout:**
 
@@ -183,7 +183,7 @@ runpy.run_path(r'D:\repos\Pantella\main.py', run_name='__main__')
 | Method | Survives SSH disconnect? | Can see WoW window? | Notes |
 |--------|-------------------------|--------------------|----|
 | `New-Object Process` + async stream readers + `WaitForExit` | ❌ Dies when parent exits | ❌ Session 0 | Keeps process alive only during SSH session; async readers prevent stdout buffer deadlock |
-| `schtasks /create /tn "X" /tr "python.exe bootstrap.py" /sc once /st 00:00 /ru 2glea /f` + `schtasks /run /tn X` | ✅ Independent process | ❌ Session 0 | Process survives but can't enumerate interactive desktop windows |
+| `schtasks /create /tn "X" /tr "python.exe bootstrap.py" /sc once /st 00:00 /ru <user> /f` + `schtasks /run /tn X` | ✅ Independent process | ❌ Session 0 | Process survives but can't enumerate interactive desktop windows |
 | `Start-Process -WindowStyle Hidden` | ❌ Dies when parent exits | ❌ | Same session limitation |
 | Interactive desktop (Terminal on the machine) | ✅ | ✅ | Only reliable way to access WoW window |
 
